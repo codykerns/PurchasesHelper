@@ -7,7 +7,7 @@
 import Foundation
 import Purchases
 
-extension Purchases.Package {
+public extension Purchases.Package {
     func packageTerms(recurring: Bool = true) -> String {
         let normalPrice = self.localizedPriceString
         let introPrice = self.localizedIntroductoryPriceString
@@ -55,7 +55,7 @@ extension Purchases.Package {
     }
 }
 
-extension Array where Element: Purchases.Package {
+public extension Array where Element: Purchases.Package {
     enum SortedPackageType {
         case timeAscending
         case timeDescending
@@ -110,7 +110,7 @@ fileprivate extension SKProduct.PeriodUnit {
     }
 }
 
-extension Purchases.Package {
+public extension Purchases.Package {
     fileprivate var packagePerTitle: String {
         switch self.packageType {
         case .lifetime: return "lifetime"
