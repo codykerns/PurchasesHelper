@@ -31,7 +31,7 @@ title = myPackage.displayTitleRecurring
 PurchasesHelper adds a new method to RevenueCat's Package objects that builds a string to display subscription terms to a customer.
 
 ```swift
-let terms = myPackage.packageTerms(recurring: true)
+let terms = myPackage.packageTerms()
 // terms = '3 day free trial, then $24.99/year'
 ```
 
