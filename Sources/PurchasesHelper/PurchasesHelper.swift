@@ -1,7 +1,7 @@
 //
 //  PurchasesHelper.swift
 //
-//  Copyright © 2020 RevenueCat. All rights reserved.
+//  Copyright © 2020 Cody Kerns. All rights reserved.
 //
 
 import Foundation

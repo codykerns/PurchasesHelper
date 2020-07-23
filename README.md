@@ -1,6 +1,6 @@
 # PurchasesHelper
 
-A set of helper utilities to use with RevenueCat's [*Purchases*](https://github.com/RevenueCat/purchases-ios) iOS SDK for building paywalls.
+A set of helper utilities to use for building paywalls with RevenueCat's [*Purchases*](https://github.com/RevenueCat/purchases-ios) iOS SDK.
 
 ## Installation
 
