@@ -12,7 +12,7 @@ Add this repository as a Swift Package in Xcode.
 
 ### Package Formatting
 
-Although RevenueCat makes subscription logic simple, displaying the length and terms of a subscription package is not trivial when considering introductory and promotional offers, as well as recurring attributes that must be shown on your paywall.
+Although RevenueCat makes subscription logic simple, displaying the length and terms of a subscription package is not trivial when considering introductory offers, as well as recurring attributes that must be shown on your paywall.
 
 #### Package Title
 
@@ -41,8 +41,6 @@ Set `recurring` to `false` to format your terms as non-recurring, like:
 let terms = myPackage.packageTerms(recurring: false)
 // terms = '3 day free trial, then $24.99 for 1 year'
 ```
-
-The `packageTerms(recurring:)` method supports [introductory]() and [promotional]() offers.
 
 ### Package Sorting
 
