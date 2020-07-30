@@ -38,7 +38,7 @@ Or, check synchronously from an instance of PurchaserInfo:
 
 ```swift
 
-purchaserInfo.entitlementIsActive(entitlement: "premium_access")
+purchaserInfo.isActive(entitlement: "premium_access")
 
 ```
 
