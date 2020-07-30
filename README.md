@@ -42,6 +42,8 @@ purchaserInfo.isActive(entitlement: "premium_access")
 
 ```
 
+##### Sandbox
+
 In sandbox mode, the originalApplicationVersion is always '1.0'. To test different versions and how they behave, set the sandboxVersionOverride property to simulate a version number while only in sandbox mode:
 
 ```swift

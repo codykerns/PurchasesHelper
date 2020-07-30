@@ -139,7 +139,6 @@ extension CompatibilityAccessManager {
 }
 
 /// UIApplication helpers
-
 extension UIApplication {
     static var isSandbox: Bool {
         Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true
