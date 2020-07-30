@@ -16,7 +16,7 @@ public class CompatibilityAccessManager {
         var entitlement: String
         var versions: [String]
         
-        static func == (lhs: Self, rhs: Self) -> Bool {
+        public static func == (lhs: Self, rhs: Self) -> Bool {
             return lhs.entitlement == rhs.entitlement
         }
     }
@@ -64,11 +64,11 @@ public class CompatibilityAccessManager {
 /// Version and entitlement registration
 extension CompatibilityAccessManager {
     public func register(entitlement: BackwardsCompatibilityEntitlement) {
-        if !registeredVersions.contains(version) {
-            registeredVersions.append(version)
-            self.log("Registered entitlement '\(version.entitlement)' for versions \(version.versions.joined(separator: ", ")).")
+        if !registeredVersions.contains(entitlement) {
+            registeredVersions.append(entitlement)
+            self.log("Registered entitlement '\(entitlement.entitlement)' for versions \(entitlement.versions.joined(separator: ", ")).")
         } else {
-            self.log("Entitlement '\(version.entitlement)' already registered.")
+            self.log("Entitlement '\(entitlement.entitlement)' already registered.")
         }
     }
     
