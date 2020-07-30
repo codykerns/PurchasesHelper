@@ -25,10 +25,6 @@ class CompatibilityAccessManager {
     
     func isActive(entitlement: String, result: @escaping ((Bool) -> Void)) {
         
-        CompatibilityAccessManager.shared.register(entitlement:
-            .init(entitlement: "Premium", versions: ["50"])
-        )
-        
         self.log("Checking access to entitlement '\(entitlement)'")
         
         Purchases.shared.purchaserInfo { (info, error) in
