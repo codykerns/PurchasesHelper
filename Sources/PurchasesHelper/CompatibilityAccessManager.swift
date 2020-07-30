@@ -12,7 +12,7 @@ class CompatibilityAccessManager {
 
     private init() { }
     
-    struct BackwardsCompatibilityVersion: Equatable {
+    struct BackwardsCompatibilityEntitlement: Equatable {
         var entitlement: String
         var versions: [String]
         
@@ -21,9 +21,13 @@ class CompatibilityAccessManager {
         }
     }
         
-    private var registeredVersions: [BackwardsCompatibilityVersion] = []
+    private var registeredVersions: [BackwardsCompatibilityEntitlement] = []
     
     func isActive(entitlement: String, result: @escaping ((Bool) -> Void)) {
+        
+        CompatibilityAccessManager.shared.register(entitlement:
+            .init(entitlement: "Premium", versions: ["50"])
+        )
         
         self.log("Checking access to entitlement '\(entitlement)'")
         
@@ -63,7 +67,7 @@ class CompatibilityAccessManager {
 
 /// Version and entitlement registration
 extension CompatibilityAccessManager {
-    func register(version: BackwardsCompatibilityVersion) {
+    func register(entitlement: BackwardsCompatibilityEntitlement) {
         if !registeredVersions.contains(version) {
             registeredVersions.append(version)
             self.log("Registered entitlement '\(version.entitlement)' for versions \(version.versions.joined(separator: ", ")).")

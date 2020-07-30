@@ -10,6 +10,30 @@ Add this repository as a Swift Package in Xcode.
 
 ## Features
 
+### CompabilityAccessManager
+
+Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access. 
+
+To use it, simply register an entitlement to a set of app versions that should be granted access. For example, if your paid app was version 1.0 (50) and your subscription update is 1.1 (75), register your entitlement like the following:
+
+```swift
+
+CompatibilityAccessManager.shared.register(entitlement:
+    .init(entitlement: "Premium", versions: ["50"])
+)
+
+```
+
+To check if your entitlement is active between RevenueCat or these registered entitlements:
+
+```swift
+
+CompatibilityAccessManager.shared.isActive(entitlement: "Premium") { (isActive) in
+
+}
+
+```
+
 ### Package Formatting
 
 Although RevenueCat makes subscription logic simple, displaying the length and terms of a subscription package is not trivial when considering introductory offers, as well as recurring attributes that must be shown on your paywall.
