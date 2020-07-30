@@ -16,6 +16,11 @@ public class CompatibilityAccessManager {
         public var entitlement: String
         public var versions: [String]
         
+        public init(entitlement: String, versions: [String]) {
+            self.entitlement = entitlement
+            self.versions = versions
+        }
+        
         public static func == (lhs: Self, rhs: Self) -> Bool {
             return lhs.entitlement == rhs.entitlement
         }
