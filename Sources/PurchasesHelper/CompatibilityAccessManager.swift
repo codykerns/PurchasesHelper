@@ -16,6 +16,7 @@ public class CompatibilityAccessManager {
         public var entitlement: String
         public var versions: [String]
         
+        // public structs need public inits
         public init(entitlement: String, versions: [String]) {
             self.entitlement = entitlement
             self.versions = versions
@@ -27,6 +28,11 @@ public class CompatibilityAccessManager {
     }
     
     public var debugLogsEnabled: Bool = true
+    
+    /**
+     Because the sandbox originalApplicationVersion is always '1.0', set this property to test different version numbers.
+    */
+    public var sandboxVersionOverride: String? = nil
         
     fileprivate var registeredVersions: [BackwardsCompatibilityEntitlement] = []
     
@@ -39,11 +45,40 @@ public class CompatibilityAccessManager {
                 /// Check entitlement from returned PurchaserInfo
                 return result(info.isActive(entitlement: entitlement), info)
             } else {
+                
+                /// If in sandbox mode and sandbox version is set, use this
+                if UIApplication.isSandbox,
+                    let sandboxVersion = self.sandboxVersionOverride {
+                    
+                    let isActive = self.entitlementActiveInCompatibility(entitlement, originalVersion: sandboxVersion)
+                    
+                    /// PurchaserInfo not available, but using sandbox test version
+                    
+                    if isActive {
+                        self.log("[SANDBOX] PurchaserInfo not available, entitlement \(entitlement) active in sandbox version \(sandboxVersion).")
+                    } else {
+                        self.log("[SANDBOX] PurchaserInfo not available, entitlement \(entitlement) not active in sandbox version \(sandboxVersion)")
+                    }
+                    
+                    return result(isActive, nil)
+                }
+                
                 /// PurchaserInfo not available, so not able to check against originalApplicationVersion
                 self.log("PurchaserInfo not available, entitlement \(entitlement) not active.")
                 return result(false, nil)
             }
         }
+    }
+    
+    fileprivate func entitlementActiveInCompatibility(_ entitlement: String, originalVersion: String) -> Bool {
+        for version in CompatibilityAccessManager.shared.registeredVersions {
+            if version.entitlement == entitlement, version.versions.contains(originalVersion) {
+                
+                CompatibilityAccessManager.shared.log("Version \(originalVersion) found in registered backwards compatibility version for entitlement '\(entitlement)'.")
+                return true
+            }
+        }
+        return false
     }
 }
 
@@ -56,20 +91,23 @@ extension Purchases.PurchaserInfo {
         } else {
             /// If a user doesn't have access to an entitlement via RevenueCat, check original downloaded version and compare to registered backwards compatibility versions
             if CompatibilityAccessManager.shared.registeredVersions.count != 0,
-                let originalVersion = self.originalApplicationVersion {
+                let originalVersion = self.originalApplicationVersionFixed {
                 
-                for version in CompatibilityAccessManager.shared.registeredVersions {
-                    if version.entitlement == entitlement, version.versions.contains(originalVersion) {
-                        
-                        CompatibilityAccessManager.shared.log("Version \(originalVersion) found in registered backwards compatibility version for entitlement '\(entitlement)'.")
-                        return true
-                    }
-                }
+                return CompatibilityAccessManager.shared
+                    .entitlementActiveInCompatibility(entitlement, originalVersion: originalVersion)
             }
             
             /// No registered backwards compatibility versions, or no available originalApplicationVersion to check against
             CompatibilityAccessManager.shared.log("Entitlement \(entitlement) not active.")
             return false
+        }
+    }
+    
+    fileprivate var originalApplicationVersionFixed: String? {
+        if UIApplication.isSandbox {
+            return CompatibilityAccessManager.shared.sandboxVersionOverride ?? self.originalApplicationVersion
+        } else {
+            return self.originalApplicationVersion
         }
     }
 }
@@ -97,5 +135,13 @@ extension CompatibilityAccessManager {
         guard self.debugLogsEnabled else { return }
         
         print("[CompatibilityAccessManager] \(message)")
+    }
+}
+
+/// UIApplication helpers
+
+extension UIApplication {
+    static var isSandbox: Bool {
+        Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true
     }
 }
