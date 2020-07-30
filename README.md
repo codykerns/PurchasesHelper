@@ -28,7 +28,7 @@ If you want to use CompatibilityAccessManager to asynchronously fetch purchaserI
 
 ```swift
 
-CompatibilityAccessManager.shared.isActive(entitlement: "premium_access") { (isActive) in
+CompatibilityAccessManager.shared.isActive(entitlement: "premium_access") { (isActive, purchaserInfo) in
 
 }
 
