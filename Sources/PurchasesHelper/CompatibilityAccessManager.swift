@@ -13,8 +13,8 @@ public class CompatibilityAccessManager {
     private init() { }
     
     public struct BackwardsCompatibilityEntitlement: Equatable {
-        var entitlement: String
-        var versions: [String]
+        public var entitlement: String
+        public var versions: [String]
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
             return lhs.entitlement == rhs.entitlement
