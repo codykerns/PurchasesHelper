@@ -7,12 +7,12 @@
 import Foundation
 import Purchases
 
-class CompatibilityAccessManager {
-    static let shared = CompatibilityAccessManager()
+public class CompatibilityAccessManager {
+    public static let shared = CompatibilityAccessManager()
 
     private init() { }
     
-    struct BackwardsCompatibilityEntitlement: Equatable {
+    public struct BackwardsCompatibilityEntitlement: Equatable {
         var entitlement: String
         var versions: [String]
         
@@ -23,7 +23,7 @@ class CompatibilityAccessManager {
         
     private var registeredVersions: [BackwardsCompatibilityEntitlement] = []
     
-    func isActive(entitlement: String, result: @escaping ((Bool) -> Void)) {
+    public func isActive(entitlement: String, result: @escaping ((Bool) -> Void)) {
         
         self.log("Checking access to entitlement '\(entitlement)'")
         
@@ -63,7 +63,7 @@ class CompatibilityAccessManager {
 
 /// Version and entitlement registration
 extension CompatibilityAccessManager {
-    func register(entitlement: BackwardsCompatibilityEntitlement) {
+    public func register(entitlement: BackwardsCompatibilityEntitlement) {
         if !registeredVersions.contains(version) {
             registeredVersions.append(version)
             self.log("Registered entitlement '\(version.entitlement)' for versions \(version.versions.joined(separator: ", ")).")
@@ -72,7 +72,7 @@ extension CompatibilityAccessManager {
         }
     }
     
-    func unregister(entitlement: String) {
+    public func unregister(entitlement: String) {
         registeredVersions.removeAll(where: { $0.entitlement == entitlement })
         self.log("Unregistered entitlement '\(entitlement)'.")
     }
