@@ -19,18 +19,26 @@ To use it, simply register an entitlement to a set of app versions that should b
 ```swift
 
 CompatibilityAccessManager.shared.register(entitlement:
-    .init(entitlement: "Premium", versions: ["50"])
+    .init(entitlement: "premium_access", versions: ["50"])
 )
 
 ```
 
-To check if your entitlement is active between RevenueCat or these registered entitlements:
+If you want to use CompatibilityAccessManager to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements:
 
 ```swift
 
-CompatibilityAccessManager.shared.isActive(entitlement: "Premium") { (isActive) in
+CompatibilityAccessManager.shared.isActive(entitlement: "premium_access") { (isActive) in
 
 }
+
+```
+
+Or, check synchronously from an instance of PurchaserInfo:
+
+```swift
+
+purchaserInfo.entitlementIsActive(entitlement: "premium_access")
 
 ```
 
