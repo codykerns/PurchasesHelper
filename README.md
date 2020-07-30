@@ -42,6 +42,14 @@ purchaserInfo.isActive(entitlement: "premium_access")
 
 ```
 
+In sandbox mode, the originalApplicationVersion is always '1.0'. To test different versions and how they behave, set the sandboxVersionOverride property to simulate a version number while only in sandbox mode:
+
+```swift
+
+CompatibilityAccessManager.shared.sandboxVersionOverride = "50"
+
+```
+
 ### Package Formatting
 
 Although RevenueCat makes subscription logic simple, displaying the length and terms of a subscription package is not trivial when considering introductory offers, as well as recurring attributes that must be shown on your paywall.
