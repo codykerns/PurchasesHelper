@@ -23,9 +23,9 @@ CompatibilityAccessManager.shared.register(entitlement:
 )
 
 ```
-As CompatibilityAccessManager is now your source of truth for entitlement access, you have a few options for checking if entitlements are active.
+As `CompatibilityAccessManager` is now your source of truth for entitlement access, you have a few options for checking if entitlements are active.
 
-If you want CompatibilityAccessManager to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements:
+If you want `CompatibilityAccessManager` to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements, call `isActive`  on the shared `CompatibilityAccessManager`. This is safe to call as often as you need, as it relies on the Purchases SDK caching mechanisms for fetching purchaserInfo:
 
 ```swift
 
