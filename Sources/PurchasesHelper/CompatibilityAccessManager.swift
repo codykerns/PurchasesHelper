@@ -83,18 +83,21 @@ public class CompatibilityAccessManager {
 }
 
 extension Purchases.PurchaserInfo {
-    public func isActive(entitlement: String) -> Bool {
+    public func isActive(entitlement: String, usesRegisteredCompatibilityVersions: Bool = true) -> Bool {
         /// If a user has access to an entitlement, return true
         if self.entitlements[entitlement]?.isActive == true {
             CompatibilityAccessManager.shared.log("Entitlement '\(entitlement)' active in RevenueCat.")
             return true
         } else {
-            /// If a user doesn't have access to an entitlement via RevenueCat, check original downloaded version and compare to registered backwards compatibility versions
-            if CompatibilityAccessManager.shared.registeredVersions.count != 0,
-                let originalVersion = self.originalApplicationVersionFixed {
-                
-                return CompatibilityAccessManager.shared
-                    .entitlementActiveInCompatibility(entitlement, originalVersion: originalVersion)
+            
+            if usesRegisteredCompatibilityVersions {
+                /// If a user doesn't have access to an entitlement via RevenueCat, check original downloaded version and compare to registered backwards compatibility versions
+                if CompatibilityAccessManager.shared.registeredVersions.count != 0,
+                    let originalVersion = self.originalApplicationVersionFixed {
+                    
+                    return CompatibilityAccessManager.shared
+                        .entitlementActiveInCompatibility(entitlement, originalVersion: originalVersion)
+                }
             }
             
             /// No registered backwards compatibility versions, or no available originalApplicationVersion to check against

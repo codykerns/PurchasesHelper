@@ -23,8 +23,9 @@ CompatibilityAccessManager.shared.register(entitlement:
 )
 
 ```
+As CompatibilityAccessManager is now your source of truth for entitlement access, you have a few options for checking if entitlements are active.
 
-If you want to use CompatibilityAccessManager to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements:
+If you want CompatibilityAccessManager to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements:
 
 ```swift
 
@@ -34,7 +35,7 @@ CompatibilityAccessManager.shared.isActive(entitlement: "premium_access") { (isA
 
 ```
 
-Or, check synchronously from an instance of PurchaserInfo:
+Or, you can check synchronously from an instance of PurchaserInfo:
 
 ```swift
 
