@@ -1,3 +1,7 @@
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/codykerns/PurchasesHelper?color=orange&label=SPM&logo=swift&logoColor=white)
+[![GitHub issues](https://img.shields.io/github/issues/codykerns/PurchasesHelper)](https://github.com/codykerns/PurchasesHelper/issues)
+[![GitHub license](https://img.shields.io/github/license/codykerns/PurchasesHelper)](https://github.com/codykerns/PurchasesHelper/blob/master/LICENSE)
+[![Twitter](https://img.shields.io/twitter/url?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fcodykerns%2FPurchasesHelper)
 # PurchasesHelper
 
 A set of helper utilities to use for building paywalls with RevenueCat's [*Purchases*](https://github.com/RevenueCat/purchases-ios) iOS SDK.
