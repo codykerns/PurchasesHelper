@@ -40,21 +40,36 @@ public class CompatibilityAccessManager {
      Optional configuration call to set entitlement versions as well as restore transactions if a receipt is available. **IMPORTANT**: this method should be called *after* you initialize the Purchases SDK.
      */
     public static func configure(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
+        let manager = CompatibilityAccessManager.shared
+        
         entitlements.forEach { (entitlement) in
             CompatibilityAccessManager.shared.register(entitlement: entitlement)
         }
         
         /// If we don't have an originalApplicationVersion in the Purchases SDK, and we have a receipt available, automatically restore transactions to ensure a value for originalApplicationVersion in PurchaserInfo
         
+        manager.log("Fetching PurchaserInfo.")
+        
         Purchases.shared.purchaserInfo { (info, error) in
-            if info?.originalApplicationVersion == nil {
+            if let originalApplicationVersion = info?.originalApplicationVersionFixed {
+                manager.log("originalApplicationVersion is \(originalApplicationVersion)")
+
+            } else {
+                manager.log("originalApplicationVersion is nil - checking for a receipt..")
+                
                 if let receiptURL = Bundle.main.appStoreReceiptURL,
                    let _ = try? Data(contentsOf: receiptURL) {
+                    manager.log("Receipt data found. Syncing with Purchases..")
                     
                     Purchases.shared.restoreTransactions { (info, error) in
+                        if error == nil {
+                            manager.log("Receipt synced.")
+                        }
+                        
                         completion?(info)
                     }
                 } else {
+                    manager.log("No receipt data found.")
                     
                     /// No receipt data - restoreTransactions will need to be called manually as it will likely require a sign-in
                     completion?(nil)
