@@ -44,19 +44,24 @@ public class CompatibilityAccessManager {
             CompatibilityAccessManager.shared.register(entitlement: entitlement)
         }
         
-        /// If we're not anonymous in the Purchases SDK, and we have a receipt available, restore transactions to ensure a value for originalApplicationVersion in PurchaserInfo
-        if !Purchases.shared.isAnonymous,
-           let receiptURL = Bundle.main.appStoreReceiptURL,
-           let _ = try? Data(contentsOf: receiptURL) {
-            
-            Purchases.shared.restoreTransactions { (info, error) in
-                completion?(info)
+        /// If we don't have an originalApplicationVersion in the Purchases SDK, and we have a receipt available, automatically restore transactions to ensure a value for originalApplicationVersion in PurchaserInfo
+        
+        Purchases.shared.purchaserInfo { (info, error) in
+            if info?.originalApplicationVersion == nil {
+                if let receiptURL = Bundle.main.appStoreReceiptURL,
+                   let _ = try? Data(contentsOf: receiptURL) {
+                    
+                    Purchases.shared.restoreTransactions { (info, error) in
+                        completion?(info)
+                    }
+                } else {
+                    
+                    /// No receipt data - restoreTransactions will need to be called manually as it will likely require a sign-in
+                    completion?(nil)
+                }
             }
-        } else {
-            
-            /// No receipt data and our user isn't anonymous - restoreTransactions will need to be called manually as it will likely require a sign-in
-            completion?(nil)
         }
+        
     }
     
     public func isActive(entitlement: String, result: @escaping ((Bool, Purchases.PurchaserInfo?) -> Void)) {
