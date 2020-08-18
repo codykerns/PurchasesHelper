@@ -18,7 +18,17 @@ Add this repository as a Swift Package in Xcode.
 
 Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access. 
 
-To use it, simply register an entitlement to a set of app versions that should be granted access. For example, if your paid app was version 1.0 (50) and your subscription update is 1.1 (75), register your entitlement like the following:
+The easiest way to get started is to call `configure` on the shared instance of `CompatibilityAccessManager` after you initialize the Purchases SDK and provide an array of entitlement names and versions. For example, if your paid app was version 1.0 (50) and your subscription update is 1.1 (75), register your entitlement like the following:
+
+```swift
+
+CompatibilityAccessManager.shared.configure(entitlements: [
+    .init(entitlement: "premium_access", versions: ["50"])
+])
+
+```
+
+If you don't want purchase restoration on launch, simply register an entitlement to a set of app versions that should be granted access. 
 
 ```swift
 
