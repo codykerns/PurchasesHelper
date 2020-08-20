@@ -54,6 +54,7 @@ public class CompatibilityAccessManager {
             if let originalApplicationVersion = info?.originalApplicationVersionFixed {
                 manager.log("originalApplicationVersion is \(originalApplicationVersion)")
 
+                completion?(info)
             } else {
                 manager.log("originalApplicationVersion is nil - checking for a receipt..")
                 
