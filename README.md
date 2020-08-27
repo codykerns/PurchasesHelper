@@ -22,7 +22,7 @@ The easiest way to get started is to call `configure` on the shared instance of 
 
 ```swift
 
-CompatibilityAccessManager.shared.configure(entitlements: [
+CompatibilityAccessManager.configure(entitlements: [
     .init(entitlement: "premium_access", versions: ["50"])
 ])
 
@@ -122,4 +122,4 @@ The available sorting options are:
 > Sorts by longest duration -> shortest duration
 
 > **.hasIntroductoryPrice**  
-> Sorts by packages that have an introductory price (e.g. free trial) first
+> Sorts by packages that have an introductory price (e.g. free trial) first. Requires iOS 11.2 minimum.
