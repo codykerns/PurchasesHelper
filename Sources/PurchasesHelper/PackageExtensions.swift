@@ -24,7 +24,9 @@ public extension Purchases.Package {
         }
         
         // - check for an introductory discount for a package
-        if let intro = self.product.introductoryPrice {
+        if #available(iOS 11.2, *),
+            let intro = self.product.introductoryPrice {
+            
             // - introductory offers
             let introLengthTitle = intro.subscriptionPeriod.periodLengthTitle
             
@@ -76,13 +78,18 @@ public extension Array where Element: Purchases.Package {
             return self.sorted(by: { $0.packageType.rawValue < $1.packageType.rawValue })
         case .hasIntroductoryPrice:
             // 3 day trial, yearly -> weekly -> monthly
-            return self.sorted(by: {
-                return $0.product.introductoryPrice != nil && $1.product.introductoryPrice == nil
-            })
+            if #available(iOS 11.2, *) {
+                return self.sorted(by: {
+                    return $0.product.introductoryPrice != nil && $1.product.introductoryPrice == nil
+                })
+            } else {
+                return self.sorted(by: .timeAscending)
+            }
         }
     }
 }
 
+@available(iOS 11.2, *)
 fileprivate extension SKProductSubscriptionPeriod {
     var periodLengthTitle: String {
         let isPlural = numberOfUnits != 1
@@ -90,6 +97,7 @@ fileprivate extension SKProductSubscriptionPeriod {
     }
 }
 
+@available(iOS 11.2, *)
 fileprivate extension SKProductDiscount {
     func periodLengthTitle(for unit: SKProduct.PeriodUnit) -> String {
         let isPlural = numberOfPeriods != 1
@@ -97,6 +105,7 @@ fileprivate extension SKProductDiscount {
     }
 }
 
+@available(iOS 11.2, *)
 fileprivate extension SKProduct.PeriodUnit {
     var title: String {
         switch self {

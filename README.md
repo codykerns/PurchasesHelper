@@ -122,4 +122,4 @@ The available sorting options are:
 > Sorts by longest duration -> shortest duration
 
 > **.hasIntroductoryPrice**  
-> Sorts by packages that have an introductory price (e.g. free trial) first
+> Sorts by packages that have an introductory price (e.g. free trial) first. Requires iOS 11.2 minimum.
