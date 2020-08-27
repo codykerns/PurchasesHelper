@@ -22,7 +22,7 @@ The easiest way to get started is to call `configure` on the shared instance of 
 
 ```swift
 
-CompatibilityAccessManager.configure(entitlements: [
+CompatibilityAccessManager.shared.configure(entitlements: [
     .init(entitlement: "premium_access", versions: ["50"])
 ])
 
