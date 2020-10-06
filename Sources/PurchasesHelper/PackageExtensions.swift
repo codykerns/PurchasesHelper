@@ -155,7 +155,7 @@ public extension Purchases.Package {
     var displayTitleRecurring: String {
         switch self.packageType {
         case .lifetime: return "Lifetime"
-        case .annual: return "Annually"
+        case .annual: return "Yearly"
         case .sixMonth: return "6 Months Recurring"
         case .threeMonth: return "3 Months Recurring"
         case .twoMonth: return "2 Months Recurring"
