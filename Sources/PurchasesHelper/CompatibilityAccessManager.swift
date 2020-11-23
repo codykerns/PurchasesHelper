@@ -61,7 +61,7 @@ public class CompatibilityAccessManager {
                    let _ = try? Data(contentsOf: receiptURL) {
                     self.log("Receipt data found. Syncing with Purchases..")
                     
-                    Purchases.shared.restoreTransactions { (info, error) in
+                    Purchases.shared.syncPurchases { (info, error) in
                         if error == nil {
                             self.log("Receipt synced.")
                         }
