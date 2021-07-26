@@ -18,9 +18,13 @@ Add this repository as a Swift Package in Xcode.
 
 Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access. 
 
-The easiest way to get started is to call `syncReceiptAndRegister` on the shared instance of `CompatibilityAccessManager` after you initialize the Purchases SDK and provide an array of entitlement names and versions. By calling `syncReceiptAndRegister`, you will sync a user's receipt with their RevenueCat app user ID if there hasn't been a receipt synced yet. **A receipt must be synced with RevenueCat for this to work. You don't have to use .syncReceiptAndRegister, but you will need to either call syncPurchases or restoreTransactions from *Purchases* for CompatibilityAccessManager to work as expected.**
+The easiest way to get started is to call `syncReceiptAndRegister` on the shared instance of `CompatibilityAccessManager` after you initialize the Purchases SDK, then provide an array of entitlement names and versions. 
 
-##### **🚨 Important: Your app will break in production if you don't do this correctly! You have been warned.**
+By calling `syncReceiptAndRegister`, you will sync a user's receipt with their RevenueCat app user ID if there hasn't been a receipt synced yet.
+
+**A receipt must be synced with RevenueCat for this to work. You don't have to use .syncReceiptAndRegister, but you will need to either call syncPurchases or restoreTransactions from *Purchases* for CompatibilityAccessManager to work as expected.**
+
+###$ **🚨 Important: Your app will break in production if you don't register versions correctly! You have been warned.**
 CompatibilityAccessManager requires the *build* versions of your app to be registered, not the versions that are displayed in the App Store. In other words, you must provide the `CFBundleVersion` values, **not** `CFBundleVersionShortString`. You can find these values for historical versions of your app in Xcode Organizer.
 
 #### Register Entitlements
@@ -44,7 +48,7 @@ CompatibilityAccessManager.shared.register(entitlement:
 
 ```
 
-##### Using original purchase date
+#### Using original purchase date
 If you would like users who purchased before a certain date to have access to an entitlement, set a specific date where any purchase before then should have access. **Use this method in conjunction with compatible build versions.** There are edge cases where a user may purchase after your 'go-live' date, but then not have proper access due to App Store propagation times.
 
 ```swift
@@ -56,6 +60,8 @@ CompatibilityAccessManager.shared.register(entitlement:
 )
 
 ```
+
+#### Checking Entitlement Access
 
 ⚠️ As `CompatibilityAccessManager` is now your source of truth for entitlement access, **you should no longer check entitlements from the normal Purchases SDK.** You should only be checking entitlement access via `CompatibilityAccessManager`. You have a few options for checking if entitlements are active.
 
@@ -77,7 +83,7 @@ purchaserInfo.entitlementIsActiveWithCompatibility(entitlement: "premium_access"
 
 ```
 
-##### Sandbox
+#### Sandbox
 
 In sandbox mode, the originalApplicationVersion is always '1.0'. To test different versions and how they behave, set the sandboxVersionOverride property to simulate a version number while only in sandbox mode:
 
