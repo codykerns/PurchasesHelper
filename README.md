@@ -43,6 +43,20 @@ CompatibilityAccessManager.shared.register(entitlement:
 )
 
 ```
+
+##### Using original purchase date
+If you would like users who purchased before a certain date to have access to an entitlement, set a specific date where any purchase before then should have access. **Use this method in conjunction with compatible build versions.** There are edge cases where a user may purchase after your 'go-live' date, but then not have proper access due to App Store propagation times.
+
+```swift
+
+let subscriptionVersionLaunchDate = // The date your subscription version will go live
+
+CompatibilityAccessManager.shared.register(entitlement:
+    .init(entitlement: "premium_access", compatibleVersions: ["50"], orPurchasedBeforeDate: subscriptionVersionLaunchDate)
+)
+
+```
+
 ⚠️ As `CompatibilityAccessManager` is now your source of truth for entitlement access, **you should no longer check entitlements from the normal Purchases SDK.** You should only be checking entitlement access via `CompatibilityAccessManager`. You have a few options for checking if entitlements are active.
 
 If you want `CompatibilityAccessManager` to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements, call `entitlementIsActiveWithCompatibility`  on the shared `CompatibilityAccessManager`. This is safe to call *as often as you need*, as it relies on the Purchases SDK caching mechanisms for fetching purchaserInfo:
