@@ -24,7 +24,7 @@ By calling `syncReceiptAndRegister`, you will sync a user's receipt with their R
 
 **A receipt must be synced with RevenueCat for this to work. You don't have to use .syncReceiptAndRegister, but you will need to either call syncPurchases or restoreTransactions from *Purchases* for CompatibilityAccessManager to work as expected.**
 
-###$ **🚨 Important: Your app will break in production if you don't register versions correctly! You have been warned.**
+#### **🚨 Important: Your app will break in production if you don't register versions correctly! You have been warned.**
 CompatibilityAccessManager requires the *build* versions of your app to be registered, not the versions that are displayed in the App Store. In other words, you must provide the `CFBundleVersion` values, **not** `CFBundleVersionShortString`. You can find these values for historical versions of your app in Xcode Organizer.
 
 #### Register Entitlements
