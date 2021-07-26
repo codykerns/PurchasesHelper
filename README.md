@@ -18,42 +18,48 @@ Add this repository as a Swift Package in Xcode.
 
 Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access. 
 
-The easiest way to get started is to call `configure` on the shared instance of `CompatibilityAccessManager` after you initialize the Purchases SDK and provide an array of entitlement names and versions. For example, if your paid app was version 1.0 (50) and your subscription update is 1.1 (75), register your entitlement like the following:
+The easiest way to get started is to call `syncReceiptAndRegister` on the shared instance of `CompatibilityAccessManager` after you initialize the Purchases SDK and provide an array of entitlement names and versions. By calling `syncReceiptAndRegister`, you will sync a user's receipt with their RevenueCat app user ID if there hasn't been a receipt synced yet. **A receipt must be synced with RevenueCat for this to work. You don't have to use .syncReceiptAndRegister, but you will need to either call syncPurchases or restoreTransactions from *Purchases* for CompatibilityAccessManager to work as expected.**
+
+##### **🚨 Important: Your app will break in production if you don't do this correctly! You have been warned.**
+CompatibilityAccessManager requires the *build* versions of your app to be registered, not the versions that are displayed in the App Store. In other words, you must provide the `CFBundleVersion` values, **not** `CFBundleVersionShortString`. You can find these values for historical versions of your app in Xcode Organizer.
+
+#### Register Entitlements
+For example, if your paid app was version 1.0 (Build 50) and your subscription update is 1.1 (Build 75), register your entitlement like the following:
 
 ```swift
 
-CompatibilityAccessManager.shared.configure(entitlements: [
-    .init(entitlement: "premium_access", versions: ["50"])
+CompatibilityAccessManager.shared.syncReceiptAndRegister(entitlements: [
+    .init(entitlement: "premium_access", compatibleVersions: ["50"])
 ])
 
 ```
 
-If you don't want purchase restoration on launch, simply register an entitlement to a set of app versions that should be granted access. 
+If you don't want a receipt to sync on launch, or you are handling receipt syncing on your own side, you'll still need to register compatible versions. Instead of calling `syncReceiptAndRegister`, simply register an entitlement to a set of app build versions that should be granted access to your entitlement.
 
 ```swift
 
 CompatibilityAccessManager.shared.register(entitlement:
-    .init(entitlement: "premium_access", versions: ["50"])
+    .init(entitlement: "premium_access", compatibleVersions: ["50"])
 )
 
 ```
-As `CompatibilityAccessManager` is now your source of truth for entitlement access, you have a few options for checking if entitlements are active.
+⚠️ As `CompatibilityAccessManager` is now your source of truth for entitlement access, **you should no longer check entitlements from the normal Purchases SDK.** You should only be checking entitlement access via `CompatibilityAccessManager`. You have a few options for checking if entitlements are active.
 
-If you want `CompatibilityAccessManager` to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements, call `isActive`  on the shared `CompatibilityAccessManager`. This is safe to call as often as you need, as it relies on the Purchases SDK caching mechanisms for fetching purchaserInfo:
+If you want `CompatibilityAccessManager` to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements, call `entitlementIsActiveWithCompatibility`  on the shared `CompatibilityAccessManager`. This is safe to call *as often as you need*, as it relies on the Purchases SDK caching mechanisms for fetching purchaserInfo:
 
 ```swift
 
-CompatibilityAccessManager.shared.isActive(entitlement: "premium_access") { (isActive, purchaserInfo) in
+CompatibilityAccessManager.shared.entitlementIsActiveWithCompatibility(entitlement: "premium_access") { (isActive, purchaserInfo) in
 
 }
 
 ```
 
-Or, you can check synchronously from an instance of PurchaserInfo:
+Or, you can check synchronously from an instance of `PurchaserInfo`:
 
 ```swift
 
-purchaserInfo.isActive(entitlement: "premium_access")
+purchaserInfo.entitlementIsActiveWithCompatibility(entitlement: "premium_access")
 
 ```
 
@@ -61,6 +67,7 @@ purchaserInfo.isActive(entitlement: "premium_access")
 
 In sandbox mode, the originalApplicationVersion is always '1.0'. To test different versions and how they behave, set the sandboxVersionOverride property to simulate a version number while only in sandbox mode:
 
+**🚨 Do not ship your app in production with this property set to anything other than `nil` (the default value).**
 ```swift
 
 CompatibilityAccessManager.shared.sandboxVersionOverride = "50"
@@ -92,11 +99,18 @@ let terms = myPackage.packageTerms()
 // terms = '3 day free trial, then $24.99/year'
 ```
 
-Set `recurring` to `false` to format your terms as non-recurring, like:
+Set `isRecurring` to `false` to format your terms as non-recurring, like:
 
 ```swift
-let terms = myPackage.packageTerms(recurring: false)
+let terms = myPackage.packageTerms(isRecurring: false)
 // terms = '3 day free trial, then $24.99 for 1 year'
+```
+
+Set `includesIntroTerms` to `false` to exclude any introductory prices from the returned string, for when a user has already redeemed an introductory price:
+
+```swift
+let terms = myPackage.packageTerms(includesIntroTerms: false)
+// terms = '$24.99/year'
 ```
 
 ### Package Sorting
