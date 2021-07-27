@@ -55,7 +55,7 @@ public class CompatibilityAccessManager {
         
         Purchases.shared.purchaserInfo { (info, error) in
             if let originalApplicationVersion = info?.originalApplicationVersionFixed {
-                self.log("originalApplicationVersion is \(originalApplicationVersion)")
+                self.log("Receipt already synced, originalApplicationVersion is \(originalApplicationVersion)")
 
                 completion?(info)
             } else {
@@ -73,7 +73,7 @@ public class CompatibilityAccessManager {
                         completion?(info)
                     }
                 } else {
-                    self.log("No receipt data found.")
+                    self.log("No receipt data found. Call restoreTransactions manually to sign in an fetch the latest receipt.")
                     
                     /// No receipt data - restoreTransactions will need to be called manually as it will likely require a sign-in
                     completion?(nil)
