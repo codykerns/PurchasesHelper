@@ -41,7 +41,7 @@ public class CompatibilityAccessManager {
     /**
      Optional configuration call to set entitlement versions as well as restore transactions if a receipt is available. **IMPORTANT**: this method should be called *after* you initialize the Purchases SDK.
      */
-    public func syncReceiptAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
+    public func syncReceiptIfNeededAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
         
         entitlements.forEach { (entitlement) in
             self.register(entitlement: entitlement)
@@ -50,6 +50,8 @@ public class CompatibilityAccessManager {
         /// If we don't have an originalApplicationVersion in the Purchases SDK, and we have a receipt available, automatically restore transactions to ensure a value for originalApplicationVersion in PurchaserInfo
         
         self.log("Fetching PurchaserInfo.")
+        
+        Purchases.shared.invalidatePurchaserInfoCache()
         
         Purchases.shared.purchaserInfo { (info, error) in
             if let originalApplicationVersion = info?.originalApplicationVersionFixed {

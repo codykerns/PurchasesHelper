@@ -16,13 +16,13 @@ Add this repository as a Swift Package in Xcode.
 
 ### CompabilityAccessManager
 
-Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access. 
+Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access for apps that were previously paid. 
 
-The easiest way to get started is to call `syncReceiptAndRegister` on the shared instance of `CompatibilityAccessManager` after you initialize the Purchases SDK, then provide an array of entitlement names and versions. 
+The easiest way to get started is to call `syncReceiptIfNeededAndRegister` on the shared instance of `CompatibilityAccessManager` after the Purchases SDK has been configured, then provide an array of entitlement names and versions. 
 
-By calling `syncReceiptAndRegister`, you will sync a user's receipt with their RevenueCat app user ID if there hasn't been a receipt synced yet.
+By calling `syncReceiptIfNeededAndRegister`, you will sync a user's receipt with their RevenueCat app user ID if there hasn't been a receipt synced yet, which is useful for migrating customers from your paid app version to the RevenueCat version.
 
-**A receipt must be synced with RevenueCat for this to work. You don't have to use .syncReceiptAndRegister, but you will need to either call syncPurchases or restoreTransactions from *Purchases* for CompatibilityAccessManager to work as expected.**
+**A receipt must be synced with RevenueCat for this package to work. You don't have to use `syncReceiptIfNeededAndRegister`, but you will need to either call syncPurchases or restoreTransactions from *Purchases* for CompatibilityAccessManager to work as expected.**
 
 #### **🚨 Important: Your app will break in production if you don't register versions correctly! You have been warned.**
 CompatibilityAccessManager requires the *build* versions of your app to be registered, not the versions that are displayed in the App Store. In other words, you must provide the `CFBundleVersion` values, **not** `CFBundleVersionShortString`. You can find these values for historical versions of your app in Xcode Organizer.
@@ -32,13 +32,15 @@ For example, if your paid app was version 1.0 (Build 50) and your subscription u
 
 ```swift
 
-CompatibilityAccessManager.shared.syncReceiptAndRegister(entitlements: [
+// Purchases.configure(....)
+
+CompatibilityAccessManager.shared.syncReceiptIfNeededAndRegister(entitlements: [
     .init(entitlement: "premium_access", compatibleVersions: ["50"])
 ])
 
 ```
 
-If you don't want a receipt to sync on launch, or you are handling receipt syncing on your own side, you'll still need to register compatible versions. Instead of calling `syncReceiptAndRegister`, simply register an entitlement to a set of app build versions that should be granted access to your entitlement.
+If you don't want a receipt to sync on launch, or you are handling receipt syncing on your own side, you'll still need to register compatible versions. Instead of calling `syncReceiptIfNeededAndRegister`, simply register an entitlement to a set of app build versions that should be granted access to your entitlement.
 
 ```swift
 
