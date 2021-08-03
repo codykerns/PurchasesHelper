@@ -63,6 +63,10 @@ public class CompatibilityAccessManager {
                 self.log("Receipt already synced, originalApplicationVersion is \(originalApplicationVersion)")
 
                 completion?(info)
+            } else if let originalPurchaseDate = info?.originalPurchaseDateFixed {
+                self.log("Receipt already synced, originalPurchaseDate is \(originalPurchaseDate)")
+                
+                completion?(info)
             } else {
                 self.log("originalApplicationVersion is nil - checking for a receipt..")
                 
@@ -78,10 +82,10 @@ public class CompatibilityAccessManager {
                         completion?(info)
                     }
                 } else {
-                    self.log("No receipt data found. Call restoreTransactions manually to sign in an fetch the latest receipt.")
+                    self.log("No receipt data found. Call restoreTransactions manually to sign in an fetch the latest receipt. PurchaserInfo may not include originalApplicationVersion or originalPurchaseDate.")
                     
                     /// No receipt data - restoreTransactions will need to be called manually as it will likely require a sign-in
-                    completion?(nil)
+                    completion?(info)
                 }
             }
         }
