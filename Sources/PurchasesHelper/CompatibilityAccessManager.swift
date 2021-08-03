@@ -14,12 +14,14 @@ public class CompatibilityAccessManager {
     
     public struct BackwardsCompatibilityEntitlement: Equatable {
         public var entitlement: String
-        public var versions: [String]
+        public var compatibleVersions: [String]
+        public var purchasedBefore: Date?
         
         // public structs need public inits
-        public init(entitlement: String, versions: [String]) {
+        public init(entitlement: String, compatibleVersions: [String], orPurchasedBeforeDate: Date? = nil) {
             self.entitlement = entitlement
-            self.versions = versions
+            self.compatibleVersions = compatibleVersions
+            self.purchasedBefore = orPurchasedBeforeDate
         }
         
         public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -30,16 +32,21 @@ public class CompatibilityAccessManager {
     public var debugLogsEnabled: Bool = true
     
     /**
-     Because the sandbox originalApplicationVersion is always '1.0', set this property to test different version numbers.
+     Because the sandbox `originalApplicationVersion` is always '1.0', set this property to test different version numbers.
     */
     public var sandboxVersionOverride: String? = nil
+    
+    /**
+     Set this property to test different original purchase dates when providing a 'Purchased Before' date in backwards compatibility entitlements..
+     */
+    public var sandboxOriginalPurchaseDateOverride: Date? = nil
         
     fileprivate var registeredVersions: [BackwardsCompatibilityEntitlement] = []
     
     /**
      Optional configuration call to set entitlement versions as well as restore transactions if a receipt is available. **IMPORTANT**: this method should be called *after* you initialize the Purchases SDK.
      */
-    public func configure(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
+    public func syncReceiptIfNeededAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
         
         entitlements.forEach { (entitlement) in
             self.register(entitlement: entitlement)
@@ -49,10 +56,16 @@ public class CompatibilityAccessManager {
         
         self.log("Fetching PurchaserInfo.")
         
+        Purchases.shared.invalidatePurchaserInfoCache()
+        
         Purchases.shared.purchaserInfo { (info, error) in
             if let originalApplicationVersion = info?.originalApplicationVersionFixed {
-                self.log("originalApplicationVersion is \(originalApplicationVersion)")
+                self.log("Receipt already synced, originalApplicationVersion is \(originalApplicationVersion)")
 
+                completion?(info)
+            } else if let originalPurchaseDate = info?.originalPurchaseDateFixed {
+                self.log("Receipt already synced, originalPurchaseDate is \(originalPurchaseDate)")
+                
                 completion?(info)
             } else {
                 self.log("originalApplicationVersion is nil - checking for a receipt..")
@@ -69,31 +82,31 @@ public class CompatibilityAccessManager {
                         completion?(info)
                     }
                 } else {
-                    self.log("No receipt data found.")
+                    self.log("No receipt data found. Call restoreTransactions manually to sign in an fetch the latest receipt. PurchaserInfo may not include originalApplicationVersion or originalPurchaseDate.")
                     
                     /// No receipt data - restoreTransactions will need to be called manually as it will likely require a sign-in
-                    completion?(nil)
+                    completion?(info)
                 }
             }
         }
         
     }
     
-    public func isActive(entitlement: String, result: @escaping ((Bool, Purchases.PurchaserInfo?) -> Void)) {
+    public func entitlementIsActiveWithCompatibility(entitlement: String, result: @escaping ((Bool, Purchases.PurchaserInfo?) -> Void)) {
         
         self.log("Checking access to entitlement '\(entitlement)'")
         
         Purchases.shared.purchaserInfo { (info, error) in
             if let info = info {
                 /// Check entitlement from returned PurchaserInfo
-                return result(info.isActive(entitlement: entitlement), info)
+                return result(info.entitlementIsActiveWithCompatibility(entitlement: entitlement), info)
             } else {
                 
                 /// If in sandbox mode and sandbox version is set, use this
                 if UIApplication.isSandbox,
                     let sandboxVersion = self.sandboxVersionOverride {
                     
-                    let isActive = self.entitlementActiveInCompatibility(entitlement, originalVersion: sandboxVersion)
+                    let isActive = self.entitlementActiveInCompatibilityVersions(entitlement, originalVersion: sandboxVersion)
                     
                     /// PurchaserInfo not available, but using sandbox test version
                     
@@ -113,9 +126,9 @@ public class CompatibilityAccessManager {
         }
     }
     
-    fileprivate func entitlementActiveInCompatibility(_ entitlement: String, originalVersion: String) -> Bool {
+    fileprivate func entitlementActiveInCompatibilityVersions(_ entitlement: String, originalVersion: String) -> Bool {
         for version in CompatibilityAccessManager.shared.registeredVersions {
-            if version.entitlement == entitlement, version.versions.contains(originalVersion) {
+            if version.entitlement == entitlement, version.compatibleVersions.contains(originalVersion) {
                 
                 CompatibilityAccessManager.shared.log("Version \(originalVersion) found in registered backwards compatibility version for entitlement '\(entitlement)'.")
                 return true
@@ -123,23 +136,50 @@ public class CompatibilityAccessManager {
         }
         return false
     }
+    
+    fileprivate func entitlementActiveInCompatibilityDate(_ entitlement: String, originalPurchaseDate: Date?) -> Bool {
+        if let originalPurchaseDate = originalPurchaseDate {
+            for version in CompatibilityAccessManager.shared.registeredVersions {
+                if version.entitlement == entitlement,
+                   let maximumPurchaseDateAllowed = version.purchasedBefore,
+                   maximumPurchaseDateAllowed > originalPurchaseDate {
+                    
+                    CompatibilityAccessManager.shared.log("App was originally purchased on \(originalPurchaseDate) which is before the maximum allowed date of \(maximumPurchaseDateAllowed) for entitlement '\(entitlement)', user has access.")
+                    return true
+                }
+            }
+            return false
+        } else {
+            return false
+        }
+    }
 }
 
 extension Purchases.PurchaserInfo {
-    public func isActive(entitlement: String, usesRegisteredCompatibilityVersions: Bool = true) -> Bool {
+    public func entitlementIsActiveWithCompatibility(entitlement: String, shouldCheckRegisteredCompatibilityVersions: Bool = true) -> Bool {
         /// If a user has access to an entitlement, return true
         if self.entitlements[entitlement]?.isActive == true {
             CompatibilityAccessManager.shared.log("Entitlement '\(entitlement)' active in RevenueCat.")
             return true
         } else {
             
-            if usesRegisteredCompatibilityVersions {
-                /// If a user doesn't have access to an entitlement via RevenueCat, check original downloaded version and compare to registered backwards compatibility versions
-                if CompatibilityAccessManager.shared.registeredVersions.count != 0,
-                    let originalVersion = self.originalApplicationVersionFixed {
+            if shouldCheckRegisteredCompatibilityVersions {
+                
+                /// If a user doesn't have access to an entitlement via RevenueCat, check original downloaded version and compare to registered backwards compatibility versions. If version is not available, check the original purchase date to the date in the registered entitlements.
+                if CompatibilityAccessManager.shared.registeredVersions.count != 0 {
                     
-                    return CompatibilityAccessManager.shared
-                        .entitlementActiveInCompatibility(entitlement, originalVersion: originalVersion)
+                    if let originalVersion = self.originalApplicationVersionFixed {
+                        if CompatibilityAccessManager.shared
+                            .entitlementActiveInCompatibilityVersions(entitlement, originalVersion: originalVersion) == true {
+                            return true
+                        }
+                    }
+                    
+                    if let originalPurchaseDate = self.originalPurchaseDateFixed {
+                        if CompatibilityAccessManager.shared.entitlementActiveInCompatibilityDate(entitlement, originalPurchaseDate: originalPurchaseDate) == true {
+                            return true
+                        }
+                    }
                 }
             }
             
@@ -156,6 +196,14 @@ extension Purchases.PurchaserInfo {
             return self.originalApplicationVersion
         }
     }
+    
+    fileprivate var originalPurchaseDateFixed: Date? {
+        if UIApplication.isSandbox {
+            return CompatibilityAccessManager.shared.sandboxOriginalPurchaseDateOverride ?? self.originalPurchaseDate
+        } else {
+            return self.originalPurchaseDate
+        }
+    }
 }
 
 /// Version and entitlement registration
@@ -163,7 +211,7 @@ extension CompatibilityAccessManager {
     public func register(entitlement: BackwardsCompatibilityEntitlement) {
         if !registeredVersions.contains(entitlement) {
             registeredVersions.append(entitlement)
-            self.log("Registered entitlement '\(entitlement.entitlement)' for versions \(entitlement.versions.joined(separator: ", ")).")
+            self.log("Registered entitlement '\(entitlement.entitlement)' for versions \(entitlement.compatibleVersions.joined(separator: ", ")).")
         } else {
             self.log("Entitlement '\(entitlement.entitlement)' already registered.")
         }
