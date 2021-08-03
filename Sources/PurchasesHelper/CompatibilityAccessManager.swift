@@ -35,6 +35,11 @@ public class CompatibilityAccessManager {
      Because the sandbox `originalApplicationVersion` is always '1.0', set this property to test different version numbers.
     */
     public var sandboxVersionOverride: String? = nil
+    
+    /**
+     Set this property to test different original purchase dates when providing a 'Purchased Before' date in backwards compatibility entitlements..
+     */
+    public var sandboxOriginalPurchaseDateOverride: Date? = nil
         
     fileprivate var registeredVersions: [BackwardsCompatibilityEntitlement] = []
     
@@ -166,7 +171,7 @@ extension Purchases.PurchaserInfo {
                         }
                     }
                     
-                    if let originalPurchaseDate = self.originalPurchaseDate {
+                    if let originalPurchaseDate = self.originalPurchaseDateFixed {
                         if CompatibilityAccessManager.shared.entitlementActiveInCompatibilityDate(entitlement, originalPurchaseDate: originalPurchaseDate) == true {
                             return true
                         }
@@ -185,6 +190,14 @@ extension Purchases.PurchaserInfo {
             return CompatibilityAccessManager.shared.sandboxVersionOverride ?? self.originalApplicationVersion
         } else {
             return self.originalApplicationVersion
+        }
+    }
+    
+    fileprivate var originalPurchaseDateFixed: Date? {
+        if UIApplication.isSandbox {
+            return CompatibilityAccessManager.shared.sandboxOriginalPurchaseDateOverride ?? self.originalPurchaseDate
+        } else {
+            return self.originalPurchaseDate
         }
     }
 }
