@@ -247,7 +247,7 @@ extension CompatibilityAccessManager {
     }
 }
 
-/// UIApplication helpers
+// NSApplication helpers
 #if os(macOS)
 extension NSApplication {
     static var isSandbox: Bool {
@@ -255,6 +255,7 @@ extension NSApplication {
     }
 }
 #else
+/// UIApplication helpers
 extension UIApplication {
     static var isSandbox: Bool {
         Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true
