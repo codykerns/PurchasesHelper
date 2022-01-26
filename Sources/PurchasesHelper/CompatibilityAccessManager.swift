@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import Purchases
+import RevenueCat
 
 public class CompatibilityAccessManager {
     public static let shared = CompatibilityAccessManager()
@@ -46,7 +46,7 @@ public class CompatibilityAccessManager {
     /**
      Optional configuration call to set entitlement versions as well as restore transactions if a receipt is available. **IMPORTANT**: this method should be called *after* you initialize the Purchases SDK.
      */
-    public func syncReceiptIfNeededAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
+    public func syncReceiptIfNeededAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((RevenueCat.CustomerInfo?) -> Void)? = nil) {
 
         entitlements.forEach { (entitlement) in
             self.register(entitlement: entitlement)
@@ -56,9 +56,9 @@ public class CompatibilityAccessManager {
 
         self.log("Fetching PurchaserInfo.")
 
-        Purchases.shared.invalidatePurchaserInfoCache()
+        Purchases.shared.invalidateCustomerInfoCache()
 
-        Purchases.shared.purchaserInfo { (info, error) in
+        Purchases.shared.getCustomerInfo { (info, error) in
             if let originalApplicationVersion = info?.originalApplicationVersionFixed {
                 self.log("Receipt already synced, originalApplicationVersion is \(originalApplicationVersion)")
 
@@ -92,11 +92,11 @@ public class CompatibilityAccessManager {
 
     }
 
-    public func entitlementIsActiveWithCompatibility(entitlement: String, result: @escaping ((Bool, Purchases.PurchaserInfo?) -> Void)) {
+    public func entitlementIsActiveWithCompatibility(entitlement: String, result: @escaping ((Bool, RevenueCat.CustomerInfo?) -> Void)) {
 
         self.log("Checking access to entitlement '\(entitlement)'")
 
-        Purchases.shared.purchaserInfo { (info, error) in
+        Purchases.shared.getCustomerInfo { (info, error) in
             if let info = info {
                 /// Check entitlement from returned PurchaserInfo
                 return result(info.entitlementIsActiveWithCompatibility(entitlement: entitlement), info)
@@ -160,7 +160,7 @@ public class CompatibilityAccessManager {
     }
 }
 
-extension Purchases.PurchaserInfo {
+extension RevenueCat.CustomerInfo {
     public func entitlementIsActiveWithCompatibility(entitlement: String, shouldCheckRegisteredCompatibilityVersions: Bool = true) -> Bool {
         /// If a user has access to an entitlement, return true
         if self.entitlements[entitlement]?.isActive == true {
@@ -256,6 +256,8 @@ extension NSApplication {
 }
 #else
 /// UIApplication helpers
+import UIKit
+
 extension UIApplication {
     static var isSandbox: Bool {
         Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true

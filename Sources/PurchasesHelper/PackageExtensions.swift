@@ -1,12 +1,12 @@
 //
 //  PackageExtensions.swift
-//  
+//
 //  Copyright © 2020 Cody Kerns. All rights reserved.
 //
 
-import Purchases
+import RevenueCat
 
-public extension Purchases.Package {
+public extension RevenueCat.Package {
     
     /// Customer-facing payment terms for a RevenueCat package. Not localized.
     /// - Parameter isRecurring: If the terms should be in a recurring format. `$99/year` vs `$99 for 1 year`. Defaults to `true`.
@@ -20,8 +20,6 @@ public extension Purchases.Package {
             return normalPrice
         }
         
-        let introPrice = self.localizedIntroductoryPriceString
-        
         // - setup the normal product subscription length string
         var perTitle = "/\(packagePerTitle)".lowercased()
         
@@ -31,7 +29,8 @@ public extension Purchases.Package {
         
         // - check for an introductory discount for a package
         if #available(iOS 11.2, *), includesIntroTerms == true,
-            let intro = self.product.introductoryPrice {
+           let intro = self.storeProduct.introductoryDiscount,
+           let introPrice = self.localizedIntroductoryPriceString {
             
             // - introductory offers
             let introLengthTitle = intro.subscriptionPeriod.periodLengthTitle
@@ -54,7 +53,7 @@ public extension Purchases.Package {
                 let introPerTitle = "\(introPrice)/\(intro.subscriptionPeriod.unit.unitTitle) for \(payAYGTitle)"
                 return "\(introPerTitle), then \(normalPrice)\(perTitle)"
                 
-            @unknown default:
+            default:
                 // - an introductory product exists, but the type isn't known. display the intro price and the purchase dialog should display the appropriate terms
                 return introPrice
             }
@@ -67,14 +66,14 @@ public extension Purchases.Package {
     }
 }
 
-public extension Array where Element: Purchases.Package {
+public extension Array where Element: RevenueCat.Package {
     enum SortedPackageType {
         case timeAscending
         case timeDescending
         case hasIntroductoryPrice
     }
     
-    func sorted(by type: SortedPackageType = .timeAscending) -> [Purchases.Package] {
+    func sorted(by type: SortedPackageType = .timeAscending) -> [RevenueCat.Package] {
         switch type {
         case .timeAscending:
             // weekly -> monthly -> yearly
@@ -86,7 +85,7 @@ public extension Array where Element: Purchases.Package {
             // 3 day trial, yearly -> weekly -> monthly
             if #available(iOS 11.2, *) {
                 return self.sorted(by: {
-                    return $0.product.introductoryPrice != nil && $1.product.introductoryPrice == nil
+                    return $0.storeProduct.introductoryDiscount != nil && $1.storeProduct.introductoryDiscount == nil
                 })
             } else {
                 return self.sorted(by: .timeAscending)
@@ -96,23 +95,23 @@ public extension Array where Element: Purchases.Package {
 }
 
 @available(iOS 11.2, *)
-fileprivate extension SKProductSubscriptionPeriod {
+fileprivate extension RevenueCat.SubscriptionPeriod {
     var periodLengthTitle: String {
-        let isPlural = numberOfUnits != 1
-        return "\(numberOfUnits) \(unit.unitTitle)\(isPlural ? "s" : "")"
+        let isPlural = self.value != 1
+        return "\(self.value) \(unit.unitTitle)\(isPlural ? "s" : "")"
     }
 }
 
 @available(iOS 11.2, *)
-fileprivate extension SKProductDiscount {
-    func periodLengthTitle(for unit: SKProduct.PeriodUnit) -> String {
-        let isPlural = numberOfPeriods != 1
-        return "\(numberOfPeriods) \(unit.unitTitle)\(isPlural ? "s" : "")"
+fileprivate extension RevenueCat.StoreProductDiscount {
+    func periodLengthTitle(for unit: RevenueCat.SubscriptionPeriod.Unit) -> String {
+        let isPlural = subscriptionPeriod.value != 1
+        return "\(subscriptionPeriod.value) \(unit.unitTitle)\(isPlural ? "s" : "")"
     }
 }
 
 @available(iOS 11.2, *)
-fileprivate extension SKProduct.PeriodUnit {
+fileprivate extension RevenueCat.SubscriptionPeriod.Unit {
     var unitTitle: String {
         switch self {
         case .day:
@@ -129,7 +128,7 @@ fileprivate extension SKProduct.PeriodUnit {
     }
 }
 
-public extension Purchases.Package {
+public extension RevenueCat.Package {
     fileprivate var packagePerTitle: String {
         switch self.packageType {
         case .lifetime: return "lifetime"
