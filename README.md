@@ -67,21 +67,21 @@ CompatibilityAccessManager.shared.register(entitlement:
 
 ⚠️ As `CompatibilityAccessManager` is now your source of truth for entitlement access, **you should no longer check entitlements from the normal Purchases SDK.** You should only be checking entitlement access via `CompatibilityAccessManager`. You have a few options for checking if entitlements are active.
 
-If you want `CompatibilityAccessManager` to asynchronously fetch purchaserInfo and check if your entitlement is active between RevenueCat or your registered entitlements, call `entitlementIsActiveWithCompatibility`  on the shared `CompatibilityAccessManager`. This is safe to call *as often as you need*, as it relies on the Purchases SDK caching mechanisms for fetching purchaserInfo:
+If you want `CompatibilityAccessManager` to asynchronously fetch CustomerInfo and check if your entitlement is active between RevenueCat or your registered entitlements, call `entitlementIsActiveWithCompatibility`  on the shared `CompatibilityAccessManager`. This is safe to call *as often as you need*, as it relies on the Purchases SDK caching mechanisms for fetching CustomerInfo:
 
 ```swift
 
-CompatibilityAccessManager.shared.entitlementIsActiveWithCompatibility(entitlement: "premium_access") { (isActive, purchaserInfo) in
+CompatibilityAccessManager.shared.entitlementIsActiveWithCompatibility(entitlement: "premium_access") { (isActive, customerInfo) in
 
 }
 
 ```
 
-Or, you can check synchronously from an instance of `PurchaserInfo`:
+Or, you can check synchronously from an instance of `CustomerInfo`:
 
 ```swift
 
-purchaserInfo.entitlementIsActiveWithCompatibility(entitlement: "premium_access")
+customerInfo.entitlementIsActiveWithCompatibility(entitlement: "premium_access")
 
 ```
 

@@ -5,7 +5,7 @@
 //
 
 import Foundation
-import Purchases
+import RevenueCat
 
 public class CompatibilityAccessManager {
     public static let shared = CompatibilityAccessManager()
@@ -46,19 +46,17 @@ public class CompatibilityAccessManager {
     /**
      Optional configuration call to set entitlement versions as well as restore transactions if a receipt is available. **IMPORTANT**: this method should be called *after* you initialize the Purchases SDK.
      */
-    public func syncReceiptIfNeededAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((Purchases.PurchaserInfo?) -> Void)? = nil) {
+    public func syncReceiptIfNeededAndRegister(entitlements: [BackwardsCompatibilityEntitlement], completion: ((CustomerInfo?) -> Void)? = nil) {
 
         entitlements.forEach { (entitlement) in
             self.register(entitlement: entitlement)
         }
 
-        /// If we don't have an originalApplicationVersion in the Purchases SDK, and we have a receipt available, automatically restore transactions to ensure a value for originalApplicationVersion in PurchaserInfo
+        /// If we don't have an originalApplicationVersion in the Purchases SDK, and we have a receipt available, automatically restore transactions to ensure a value for originalApplicationVersion in CustomerInfo
 
-        self.log("Fetching PurchaserInfo.")
+        self.log("Fetching CustomerInfo.")
 
-        Purchases.shared.invalidatePurchaserInfoCache()
-
-        Purchases.shared.purchaserInfo { (info, error) in
+        Purchases.shared.getCustomerInfo(fetchPolicy: .fetchCurrent) { (info, error) in
             if let originalApplicationVersion = info?.originalApplicationVersionFixed {
                 self.log("Receipt already synced, originalApplicationVersion is \(originalApplicationVersion)")
 
@@ -82,7 +80,7 @@ public class CompatibilityAccessManager {
                         completion?(info)
                     }
                 } else {
-                    self.log("No receipt data found. Call restoreTransactions manually to sign in an fetch the latest receipt. PurchaserInfo may not include originalApplicationVersion or originalPurchaseDate.")
+                    self.log("No receipt data found. Call restoreTransactions manually to sign in an fetch the latest receipt. The user's CustomerInfo may not include originalApplicationVersion or originalPurchaseDate until then.")
 
                     /// No receipt data - restoreTransactions will need to be called manually as it will likely require a sign-in
                     completion?(info)
@@ -92,13 +90,13 @@ public class CompatibilityAccessManager {
 
     }
 
-    public func entitlementIsActiveWithCompatibility(entitlement: String, result: @escaping ((Bool, Purchases.PurchaserInfo?) -> Void)) {
+    public func entitlementIsActiveWithCompatibility(entitlement: String, result: @escaping ((Bool, CustomerInfo?) -> Void)) {
 
         self.log("Checking access to entitlement '\(entitlement)'")
 
-        Purchases.shared.purchaserInfo { (info, error) in
+        Purchases.shared.getCustomerInfo { (info, error) in
             if let info = info {
-                /// Check entitlement from returned PurchaserInfo
+                /// Check entitlement from returned CustomerInfo
                 return result(info.entitlementIsActiveWithCompatibility(entitlement: entitlement), info)
             } else {
                 #if os(macOS)
@@ -113,19 +111,19 @@ public class CompatibilityAccessManager {
 
                     let isActive = self.entitlementActiveInCompatibilityVersions(entitlement, originalVersion: sandboxVersion)
 
-                    /// PurchaserInfo not available, but using sandbox test version
+                    /// CustomerInfo not available, but using sandbox test version
 
                     if isActive {
-                        self.log("[SANDBOX] PurchaserInfo not available, entitlement \(entitlement) active in sandbox version \(sandboxVersion).")
+                        self.log("[SANDBOX] CustomerInfo not available, entitlement \(entitlement) active in sandbox version \(sandboxVersion).")
                     } else {
-                        self.log("[SANDBOX] PurchaserInfo not available, entitlement \(entitlement) not active in sandbox version \(sandboxVersion)")
+                        self.log("[SANDBOX] CustomerInfo not available, entitlement \(entitlement) not active in sandbox version \(sandboxVersion)")
                     }
 
                     return result(isActive, nil)
                 }
 
-                /// PurchaserInfo not available, so not able to check against originalApplicationVersion
-                self.log("PurchaserInfo not available, entitlement \(entitlement) not active.")
+                /// CustomerInfo not available, so not able to check against originalApplicationVersion
+                self.log("CustomerInfo not available, entitlement \(entitlement) not active.")
                 return result(false, nil)
             }
         }
@@ -160,7 +158,7 @@ public class CompatibilityAccessManager {
     }
 }
 
-extension Purchases.PurchaserInfo {
+extension CustomerInfo {
     public func entitlementIsActiveWithCompatibility(entitlement: String, shouldCheckRegisteredCompatibilityVersions: Bool = true) -> Bool {
         /// If a user has access to an entitlement, return true
         if self.entitlements[entitlement]?.isActive == true {
@@ -248,13 +246,16 @@ extension CompatibilityAccessManager {
 }
 
 // NSApplication helpers
-#if os(macOS)
+#if canImport(AppKit)
+import AppKit
+
 extension NSApplication {
     static var isSandbox: Bool {
         Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true
     }
 }
-#else
+#elseif canImport(UIKit)
+import UIKit
 /// UIApplication helpers
 extension UIApplication {
     static var isSandbox: Bool {
