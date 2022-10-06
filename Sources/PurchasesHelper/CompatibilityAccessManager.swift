@@ -245,8 +245,9 @@ extension CompatibilityAccessManager {
     }
 }
 
+#if os(macOS)
 // NSApplication helpers
-#if canImport(AppKit)
+
 import AppKit
 
 extension NSApplication {
@@ -254,9 +255,10 @@ extension NSApplication {
         Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true
     }
 }
-#elseif canImport(UIKit)
-import UIKit
+#else
 /// UIApplication helpers
+import UIKit
+
 extension UIApplication {
     static var isSandbox: Bool {
         Bundle.main.appStoreReceiptURL?.path.contains("sandboxReceipt") == true
