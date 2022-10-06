@@ -245,8 +245,9 @@ extension CompatibilityAccessManager {
     }
 }
 
-// NSApplication helpers
 #if os(macOS)
+// NSApplication helpers
+
 import AppKit
 
 extension NSApplication {
@@ -255,6 +256,7 @@ extension NSApplication {
     }
 }
 #else
+/// UIApplication helpers
 import UIKit
 
 extension UIApplication {
