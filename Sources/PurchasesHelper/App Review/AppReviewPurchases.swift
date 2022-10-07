@@ -10,7 +10,6 @@ import RevenueCat
 
 #if os(iOS)
 import UIKit
-#endif
 
 @available(iOS 11.0, *)
 public extension AppReviewChecker {
@@ -42,3 +41,5 @@ public extension AppReviewChecker {
         }
     }
 }
+
+#endif
