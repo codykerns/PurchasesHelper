@@ -20,7 +20,7 @@ It's widely known that App Review can be a really frustrating experience when su
 
 AppReviewChecker (based on Jake Mor's [Volkswagen.swift](https://github.com/jakemor/Volkswagen.swift)), displays a message to App Review if Offerings/products cannot be fetched in their testing environment.
 
-To use AppReview Checker:
+To use AppReviewChecker:
 
 ```swift
 // configure Purchases first
@@ -37,7 +37,11 @@ To test what the message looks like, pass `testingStatus` in the `configure` met
 
 ```swift
 AppReviewChecker.configure(appleAppId: "1234", testingStatus: .forceIsInAppReview)
+```
 
+To check for a specific Offering, pass the Offering identifier:
+```swift
+AppReviewChecker.shared.validateOfferingsIfInAppReview(offeringIdentifier: "offering_identifier", from: self)
 ```
 
 Apple and/or their App Review may or may not appreciate this message. Use this at your own risk.
