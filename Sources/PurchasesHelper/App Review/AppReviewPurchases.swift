@@ -32,7 +32,7 @@ public extension AppReviewChecker {
                     if isInReview {
                         self.log("App is currently in review, and failed to find the offering. Displaying message to App Review.")
 
-                        let alert = UIAlertController(title: "Message to App Review", message: "Warning: It appears that this app is in under review, but products are currently *not* able to be fetched from Apple's own StoreKit API. \n\nTypically, this means that the sandbox environment has failed, or the products have not yet been approved.\n\nPlease approve the products associated with this review first, before continuing this review.\n\nIf this message continues to be displayed, please reinstall and/or wait for the products to propagate the App Store sandbox review environment.", preferredStyle: .alert)
+                        let alert = UIAlertController(title: "Message to App Review", message: "🚨 Warning 🚨\n\nIt appears that this app is in under review, but products are currently *not* able to be fetched from Apple's own StoreKit API. \n\nTypically, this means that the sandbox environment has failed, or the products have not yet been approved.\n\nPlease approve the products associated with this review first, before continuing this review.\n\nIf this message continues to be displayed, please reinstall and/or wait for the products to propagate the App Store sandbox review environment.", preferredStyle: .alert)
                         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
                         alert.popoverPresentationController?.sourceView = viewController.view
                         viewController.present(alert, animated: true)

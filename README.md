@@ -14,6 +14,34 @@ Add this repository as a Swift Package in Xcode.
 
 ## Features
 
+### AppReviewChecker
+
+It's widely known that App Review can be a really frustrating experience when submitting with in-app purchases. Most of the time this is due to Apple's own sandbox environment, but it can lead to developers having to submit the same build over and over before finally getting either 1) a reviewer who knows to review products before the app itself, or 2) a stable sandbox environment for their review.
+
+AppReviewChecker (based on Jake Mor's [Volkswagen.swift](https://github.com/jakemor/Volkswagen.swift)), displays a message to App Review if Offerings/products cannot be fetched in their testing environment.
+
+To use AppReview Checker:
+
+```swift
+// configure Purchases first
+Purchases.configure(withAPIKey: "revenuecat_api_key")
+
+// Configure AppReviewChecker with the Apple ID found in App Store Connect -> App -> App Information
+AppReviewChecker.configure(appleAppId: "1234")
+
+// Validate offerings, or display a message to App Review. Call this early, or when your paywall loads.
+AppReviewChecker.shared.validateOfferingsIfInAppReview(from: self)
+```
+
+To test what the message looks like, pass `testingStatus` in the `configure` method:
+
+```swift
+AppReviewChecker.configure(appleAppId: "1234", testingStatus: .forceIsInAppReview)
+
+```
+
+Apple and/or their App Review may or may not appreciate this message. Use this at your own risk.
+
 ### CompabilityAccessManager
 
 Many developers have paid apps that they would like to convert to subscription apps. PurchasesHelper includes `CompatibilityAccessManager` to be used as a source of truth for entitlement access for apps that were previously paid. 
