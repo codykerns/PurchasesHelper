@@ -21,10 +21,10 @@ public class AppReviewChecker {
 
     public var debugLogsEnabled: Bool = true
 
-    public func configure(appleAppId: String,
+    public static func configure(appleAppId: String,
                           testingStatus: TestingStatus = .shippingApp) {
-        self.appleAppId = appleAppId
-        self.testingStatus = testingStatus
+        shared.appleAppId = appleAppId
+        shared.testingStatus = testingStatus
     }
 
     /// The Apple ID of your app. Found in App Store Connect -> App -> App Information
@@ -92,7 +92,8 @@ public class AppReviewChecker {
 						// Get Live App Store Version
 						if let json = jsonSerialized, let results = json["results"] as? [[String: Any]] {
 
-                            if let version = results[0]["version"] as? String {
+                            if results.count > 0,
+                               let version = results[0]["version"] as? String {
                                 self.log("Found current live version of: \(version)")
                                 self.liveVersion = version
                             } else {
