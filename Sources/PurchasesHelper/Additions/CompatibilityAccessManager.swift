@@ -241,7 +241,7 @@ extension CompatibilityAccessManager {
     fileprivate func log(_ message: String) {
         guard self.debugLogsEnabled else { return }
 
-        print("[CompatibilityAccessManager] \(message)")
+        print("[🔑 CompatibilityAccessManager] \(message)")
     }
 }
 
